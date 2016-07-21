@@ -3,7 +3,7 @@ A 3D tetris game as a part of the final project for the Interactive Computer Gra
 
 <a href="https://www.youtube.com/watch?v=MoYmfrxNLjM">This  </a> link shows a short video of the game play. 
 
-<a href="Presentation01_WebGL">This</a> is our final presentation after the project.
+<a href="/Presentation01_WebGL.pdf">This</a> is our final presentation after the project.
 
 # Personnel
 Bipeen Acharya, Suraj Bajracharya, Olivier Mahame
