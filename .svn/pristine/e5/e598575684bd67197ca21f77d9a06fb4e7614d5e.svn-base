@@ -1,0 +1,21 @@
+var TIMER = 1000;
+var IS_PLAYING = false;
+var START = false;
+
+setInterval(function(){dropButton(); },TIMER);
+
+
+function addRandomShape(){
+	var shapeNames =["C","L","I","T","S"];
+	var index = Math.floor(Math.random()*5);
+	if (IS_PLAYING){    
+		addShape(shapeNames[index]);		
+	}
+}
+
+function startGame(){
+    START = true;
+    IS_PLAYING = true;	
+	addRandomShape();
+	
+}

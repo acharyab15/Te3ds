@@ -1,0 +1,72 @@
+
+function projectionSquare() {
+	var squareNormal = normalize(vec3(0.0, 0.0, 1.0));
+	
+    projectionPoints.push(vec4(0.0, 1.0, 0.0, 1.0)); 
+    projectionNormals.push(squareNormal);
+    
+    projectionPoints.push(vec4(-1.0, 1.0, 0.0, 1.0)); 
+    projectionNormals.push(squareNormal);
+    
+    projectionPoints.push(vec4(-1.0, 0.0, 0.0, 1.0)); 
+    projectionNormals.push(squareNormal);
+    
+    
+   projectionPoints.push(vec4(0.0, 1.0, 0.0, 1.0)); 
+    projectionNormals.push(squareNormal);
+    
+    projectionPoints.push(vec4(0.0, 0.0, 0.0, 1.0)); 
+    projectionNormals.push(squareNormal);
+    
+   
+    projectionPoints.push(vec4(-1.0, 0.0, 0.0, 1.0)); 
+    projectionNormals.push(squareNormal);
+    
+    return 6;
+}
+
+function cubeProjection(cube){
+	var size = projectionSquare();
+	var pColor = vec4(1.0,1.0,1.0,1.0);
+	var obj = object("SQUARE",1,size);
+	var pZ =0;
+	var tempZ =[];
+	for( var i=0;i<LAST_PIECE_START_INDEX;i++){
+	     if(table[i].pos[0]== cube.pos[0]&&table[i].pos[1]== cube.pos[1] && table[i].pos[2]< cube.pos[2]){
+	    	 tempZ.push(table[i].pos[2]);
+	     }
+	     
+	}
+	if(tempZ.length >0){
+	  pZ = Math.max.apply(Math, tempZ)+1.01;
+	}
+	if (pZ >= 20) {
+		alert("Game over. Restart game?");
+		location.reload();
+		return;
+	}
+	obj.ctm = translate(cube.pos[0], cube.pos[1], pZ);
+	obj.pos = vec3(cube.pos[0], cube.pos[1], pZ);
+	obj.materialDiffuse = pColor
+	obj.materialSpecular = pColor;
+	obj.materialAmbient= pColor;
+	projectionTable.push(obj);
+         	
+
+}
+
+function lastBlockProjection(){
+   projectionTable = [];
+   projectionPoints =[];
+   projectionNormals =[];
+   
+   for( var i=LAST_PIECE_START_INDEX;i< table.length;i++){
+	    cubeProjection(table[i]);   
+   
+   }
+   
+   bufferData();
+   
+
+}
+

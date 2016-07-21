@@ -1,0 +1,60 @@
+
+var object = function(objType,objID,objSize){
+
+	return {
+		type:	objType,
+		id:		objID,
+		size:	objSize,
+		ctm:	mat4(),
+		pos: 	vec3(),
+		forPiece: "",
+		materialAmbient:	vec4( 1.0, 0.0, 1.0, 1.0 ),
+		materialDiffuse:	vec4( 1.0, 0.8, 0.0, 1.0 ),
+		materialSpecular:	vec4( 1.0, 0.8, 0.0, 1.0 ),
+		materialShininess:	100.0
+	}
+}
+
+
+var drawObjects = function(){
+	start =0;
+	for (var i = 0; i < table.length; i++){
+
+
+		var ap = mult(lightAmbient, table[i].materialAmbient);
+		var dp = mult(lightDiffuse, table[i].materialDiffuse);
+		var sp = mult(lightSpecular, table[i].materialSpecular);
+
+		gl.uniform4fv(ambientProductLoc,flatten(ap) );
+		gl.uniform4fv(diffuseProductLoc,flatten(dp) );
+		gl.uniform4fv( specularProductLoc,flatten(sp) );
+
+		gl.uniform1f(shininessLoc,table[i].materialShininess );
+		gl.uniformMatrix4fv(ctmLoc, false, flatten(table[i].ctm) );
+		//draw the object
+		if (table[i].type == "SQUARE") {
+			gl.drawArrays( gl.LINE_LOOP, start, table[i].size);
+		}
+		else {
+			// fill the object with it's color
+			gl.drawArrays( gl.TRIANGLES, start, table[i].size);
+
+			// draw the black border color for each piece component cube
+			var tempColorVariable = table[i].materialDiffuse;
+			var blackLine = vec4(0.0, 0.0, 0.0, 1.0);
+			gl.uniform4fv(diffuseProductLoc,flatten(blackLine) );
+			gl.uniform4fv( specularProductLoc,flatten(blackLine) );
+			gl.drawArrays(gl.LINE_LOOP, start, 15);
+			gl.drawArrays(gl.LINE_LOOP, start + 15, 5);
+			gl.drawArrays(gl.LINES, start + 21, 2);
+			gl.drawArrays(gl.LINES, start + 24, 2);
+			gl.drawArrays(gl.LINES, start + 27, 2);
+			gl.drawArrays(gl.LINE_LOOP, start + 29, 5);
+			gl.drawArrays(gl.LINES, start + 33, 3);
+		}
+
+		start += table[i].size;
+	}
+
+
+}

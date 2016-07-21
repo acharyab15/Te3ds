@@ -1,0 +1,6 @@
+var IS_PLAYING = false;
+function startGame(){
+	var shapeNames =["C","L","I","T","S"];
+	var index = Math.floor(Math.random()*5);
+     addShape(shapeNames[index]);	
+}

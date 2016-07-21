@@ -1,0 +1,42 @@
+var TIMER = 1000;
+var IS_PLAYING = false;
+var START = false;
+var nextShape = Math.floor(Math.random()*5);
+var shapeNames =["C","L","I","T","S"];
+var SCORE = 0;
+var LEVEL = 1;
+
+
+var interval = setInterval(function(){dropButton(); },TIMER);
+
+
+
+function addRandomShape(){
+	var index = nextShape;
+	nextShape= Math.floor(Math.random()*5);
+	if (IS_PLAYING){    
+		addShape(shapeNames[index],false);
+		$('.shape').hide();
+		$('#'+shapeNames[nextShape]).show();
+		$('#score').text(SCORE);
+		lastBlockProjection();
+		if (SCORE != 0 && SCORE != 4 && SCORE%100 <= 4) {
+			if (TIMER >= 10) {
+				LEVEL += 1;
+				TIMER -= 99;
+				$('#level').text(LEVEL);
+				clearInterval(interval);
+				interval = setInterval(function(){dropButton(); },TIMER);
+			}
+		}
+
+
+	}
+}
+
+function startGame(){
+	START = true;
+	IS_PLAYING = true;	
+	addRandomShape();
+
+}

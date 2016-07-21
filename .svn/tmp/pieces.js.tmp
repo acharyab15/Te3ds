@@ -1,0 +1,132 @@
+var LAST_PIECE_START_INDEX;
+var TETRIS_CUBE ={
+		normals:[],
+		vertices:[],
+		size:0
+ 
+}
+function SHAPE (n){
+	return {
+	     name:n,
+	     cubes:[]
+	}
+}
+
+function addShape(name){
+	
+	//Testing 
+     var shape  = createCShape();
+     var shapeSize = shape.cubes.length;
+     for (var i=0; i<shapeSize;i++){
+        pointsArray = pointsArray.concat(TETRIS_CUBE.vertices)
+        normalsArray = normalsArray.concat(TETRIS_CUBE.normals);
+     
+     }
+     
+     bufferData();
+     
+     LAST_PIECE_START_INDEX = table.length;
+     for (var i=0; i<shapeSize;i++){
+    	 table.push(shape.cubes[i]);
+     
+     }
+     
+}
+
+
+
+
+
+
+// JSON Handling
+
+var loadJSON = function() {
+	var request = new XMLHttpRequest();
+	request.open("GET","http://localhost:8000/pieceComponentCube.json");
+	request.onreadystatechange = function () {
+	    if (request.readyState == 4) {
+	        handleLoadedModel(JSON.parse(request.responseText));
+	    }
+	}
+	request.send();
+	
+	
+}
+
+// DO NOT DELETE THIS FUNCTION! EVEN IF YOU'RE NOT USING IT, JUST COMMENT THIS OUT!
+
+function handleLoadedModel(JSONData) {
+	
+	var JSONsize = JSONData.faces.length;
+    
+    for (var i=0; i<JSONsize; i+=8)
+    {
+    	var v1 = JSONData.faces[i+1];
+    	var v2 = JSONData.faces[i+2];
+    	var v3 = JSONData.faces[i+3];
+    	
+    	var n = JSONData.faces[i+5];
+    	
+    	TETRIS_CUBE.vertices.push(vec4(JSONData.vertices[v1*3], JSONData.vertices[(v1*3)+1], JSONData.vertices[(v1*3)+2], 1.0));
+    	TETRIS_CUBE.vertices.push(vec4(JSONData.vertices[v2*3], JSONData.vertices[(v2*3)+1], JSONData.vertices[(v2*3)+2], 1.0));
+    	TETRIS_CUBE.vertices.push(vec4(JSONData.vertices[v3*3], JSONData.vertices[(v3*3)+1], JSONData.vertices[(v3*3)+2], 1.0));
+    	TETRIS_CUBE.normals.push(vec3(JSONData.normals[n*3], JSONData.normals[(n*3)+1], JSONData.normals[(n*3)+2]));
+    	TETRIS_CUBE.normals.push(vec3(JSONData.normals[n*3], JSONData.normals[(n*3)+1], JSONData.normals[(n*3)+2]));
+    	TETRIS_CUBE.normals.push(vec3(JSONData.normals[n*3], JSONData.normals[(n*3)+1], JSONData.normals[(n*3)+2]));
+    }
+    
+    TETRIS_CUBE.size = JSONsize*3/8;
+    addShape("cubeShape");
+}
+
+//TODO: create CUBE shape
+ function createCShape(){
+	 var CShape = SHAPE("C");
+	 var c1 = object("CUBE",1,TETRIS_CUBE.size); // no translation
+	 CShape.cubes.push(c1);
+	 var c2 = object("CUBE",1,TETRIS_CUBE.size); //  move 1 unit in x
+	 c2.ctm = mult(c2.ctm,translate(1.0,0.0,0.0));
+	 CShape.cubes.push(c2);
+	 var c3 = object("CUBE",1,TETRIS_CUBE.size); //  move  1 unit in y
+	 c3.ctm = mult(c3.ctm,translate(0.0,1.0,0.0));
+	 CShape.cubes.push(c3);
+	 var c4 = object("CUBE",1,TETRIS_CUBE.size); //  move  1 unit in z
+	 c4.ctm = mult(c4.ctm,translate(1.0,1.0,0.0));
+	 CShape.cubes.push(c4);
+	 var c5 = object("CUBE",1,TETRIS_CUBE.size); 
+	 c5.ctm = mult(c5.ctm,translate(0.0,0.0,1.0));
+	 CShape.cubes.push(c5);
+	 var c6 = object("CUBE",1,TETRIS_CUBE.size); //  move 1 unit in x
+	 c6.ctm = mult(c6.ctm,translate(1.0,0.0,1.0));
+	 CShape.cubes.push(c6);
+	 var c7 = object("CUBE",1,TETRIS_CUBE.size); //  move  1 unit in y
+	 c7.ctm = mult(c7.ctm,translate(0.0,1.0,1.0));
+	 CShape.cubes.push(c7);
+	 var c8 = object("CUBE",1,TETRIS_CUBE.size); //  move  1 unit in z
+	 c8.ctm = mult(c8.ctm,translate(1.0,1.0,1.0));
+	 CShape.cubes.push(c8);
+	 
+   return CShape;	 
+	 
+	 
+ }
+ 
+
+//TODO:  create L  shape
+
+//TODO: create I shape
+
+//TODO: create T shape
+
+//TODO: create Shape
+
+
+
+
+
+
+
+
+
+
+

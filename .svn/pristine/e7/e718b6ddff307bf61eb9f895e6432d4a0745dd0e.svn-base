@@ -1,0 +1,304 @@
+var near = -10;
+var far = 10;
+var radius = 1.5;
+var theta  = 0.0;
+var phi    = 0.0;
+var dr = 5.0 * Math.PI/180.0;
+
+var left = -3.0;
+var right = 3.0;
+var ytop =3.0;
+var bottom = -3.0;
+
+var lightPosition = vec4(1.0, 1.0, 1.0, 0.0 );
+var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0 );
+var lightDiffuse = vec4( 1.0, 1.0, 1.0, 1.0 );
+var lightSpecular = vec4( 1.0, 1.0, 1.0, 1.0 );
+
+var eye;
+var at = vec3(0.0, 0.0, 0.0);
+var up = vec3(0.0, 1.0, 0.0);
+var normals =[];
+var points =[];
+var table =[];
+var curPointIndex = 0;
+var curObjIndex = 0;
+var gl,canvas;
+var ctmLoc,modelViewMatrixLoc,projectionMatrixLoc,lightPositionLoc,
+ ambientProductLoc,diffuseProductLoc,specularProductLoc,shininessLoc;
+ 
+ 
+
+
+//geometry 
+
+
+
+var  cube_vertices = [
+		vec4( -0.5, -0.5,  0.5, 1.0 ),
+		vec4( -0.5,  0.5,  0.5, 1.0 ),
+		vec4(  0.5,  0.5,  0.5, 1.0 ),
+		vec4(  0.5, -0.5,  0.5, 1.0 ),
+		vec4( -0.5, -0.5, -0.5, 1.0 ),
+		vec4( -0.5,  0.5, -0.5, 1.0 ),
+		vec4(  0.5,  0.5, -0.5, 1.0 ),
+		vec4(  0.5, -0.5, -0.5, 1.0 )
+];
+
+var cube = function(){	
+	
+	quad( 1, 0, 3, 2);
+	quad( 2, 3, 7, 6);
+	quad( 3, 0, 4, 7);
+	quad( 6, 5, 1, 2);
+	quad( 4, 5, 6, 7);
+	quad( 5, 4, 0, 1);
+	return 36;
+}
+
+//Colored cube, where the color is provided. Needed to complete.
+var  coloredCube = function(thecolor)
+{
+	quad( 1, 0, 3, 2);
+	quad( 2, 3, 7, 6);
+	quad( 3, 0, 4, 7);
+	quad( 6, 5, 1, 2);
+	quad( 4, 5, 6, 7);
+	quad( 5, 4, 0, 1);
+
+	//return the number of vertices added.
+	return 36; //should not be zero...
+}
+
+
+
+
+
+// quad generates two triangles for each face and assigns colors
+// to the vertices.  If a-b-c-d is the quad counter-clockwise, then
+// we want the triangles a-b-c and a-c-d.
+var quad = function( a,  b, c,  d)
+{
+	// Initialize temporary vectors along the quad's edge to
+	//   compute its face normal
+	var u = subtract(cube_vertices[b], cube_vertices[a]);
+	var v = subtract(cube_vertices[c], cube_vertices[b]);
+
+	var normal = normalize( cross(u, v) );
+
+	//vs - vertex sequence.
+	var vs = [a,b,c, a,c,d];
+	for (var i = 0; i < 6; i ++)
+	{
+		normals[curPointIndex] = normal;
+		points[curPointIndex] = cube_vertices[vs[i]];
+		curPointIndex++;
+	}
+}
+
+//Making our axes.
+//make the axes as scaled and translated single-colored cubes
+//that meet at the origin.  Each is a long thin rectangular prism,
+//red for x, green for y, blue for z, and each extends from the
+//origin in the positive axis direction.
+function makeAxes(){
+
+	var startingIndex, size;
+	var axis_color;
+
+	//Make x axis
+	startingIndex = curPointIndex;
+	size = coloredCube(vec4(1,0,0,1));
+
+	/*
+	 * Doing it this way as below, where I instantiate the object, then modify it,
+	 * then push it onto the table, implies the use of a copy constructor.  Since I
+	 * didn't write the copy constructor for the object class above, I'm a little
+	 * hesitant to do it this way.  However, in this case, the object being copied is
+	 * simple (containing no pointers or other such things that might be treated
+	 * incorrectly).
+	 */
+	var obj = object("CUBE", curObjIndex, startingIndex, size);
+	//table.push_back(object(CUBE, curObjIndex, startingIndex, size));
+
+	//Now scale and translate this axis.
+	obj.scale  = vec3(5,.25,.25);
+	obj.position = vec4(2.5, 0, 0, 1);
+	obj.ctm = translate(scale(obj.scale,obj.position));
+	axis_color = vec4(1.0,0.0,0.0,1.0);
+	obj.materialAmbient = axis_color;
+	obj.materialDiffuse= axis_color;
+	table.push(obj);
+
+	curObjIndex ++;
+
+
+	//make y axis
+	startingIndex = curPointIndex;
+	size = coloredCube(vec4(0,1,0,1));
+
+	/*
+	 * This way a bit safer, where I only ever create the one object, already
+	 * in the table.  Then I modify the contents of that object.
+	 */
+	table.push(object("CUBE", curObjIndex, startingIndex, size));
+
+	//Now scale and translate this axis.
+	table[curObjIndex].scale  = vec3(.25, 5, .25);
+	table[curObjIndex].position = vec4(0, 2.5, 0, 1);
+	table[curObjIndex].ctm = translate(scale(table[curObjIndex].scale,table[curObjIndex].position));
+
+	axis_color = vec4(0.0,1.0,0.0,1.0);
+	table[curObjIndex].materialAmbient= axis_color;
+	table[curObjIndex].materialDiffuse = axis_color;
+
+	curObjIndex ++;
+
+	//make z axis
+	startingIndex = curPointIndex;
+	size = coloredCube(vec4(0,0,1,1));
+
+	table.push(object("CUBE", curObjIndex, startingIndex, size));
+
+	//Now scale and translate this axis.
+	table[curObjIndex].scale  = vec3(.25,.25, 5);
+	table[curObjIndex].position = vec4(0, 0, 2.5, 1);
+	table[curObjIndex].ctm = translate(scale(table[curObjIndex].scale,table[curObjIndex].position));
+	axis_color = vec4(0.0,0.0,1.0,1.0);
+	table[curObjIndex].materialAmbient = axis_color;
+	table[curObjIndex].materialDiffuse = axis_color;
+
+	curObjIndex ++;    
+}
+
+ function object  (t,  oID, startIndex,  size) {
+	var pos = vec4(0.0,0.0,0.0,1.0);
+	var sc = 1.0;
+	var tm = translate(scale(sc,pos));
+	return {
+		type : t,
+		objID :oID,
+		startingIndexGL : startIndex,
+		sizeGL :size,
+		position : pos,
+		scale :sc,
+		rot : mat4(),
+		ctm :tm,
+	    materialAmbient: vec4( 1.0, 0.0, 1.0, 1.0 ),
+	    materialDiffuse: vec4( 1.0, 0.8, 0.0, 1.0 ),
+	    materialSpecular: vec4( 1.0, 0.8, 0.0, 1.0 ),
+	    materialShininess : 100.0
+		
+	}
+}
+ 
+
+
+window.onload = function init()
+{
+	canvas = document.getElementById( "gl-canvas" );
+    
+    gl = WebGLUtils.setupWebGL( canvas );
+    if ( !gl ) { alert( "WebGL isn't available" ); }
+
+    gl.viewport( 0, 0, canvas.width, canvas.height );
+    gl.clearColor( 0.0, 0.0, 0.0, 1.0 );
+    
+    gl.enable(gl.DEPTH_TEST);
+    
+    //
+       //  Load shaders and initialize attribute buffers
+    //
+    var program = initShaders( gl, "vertex-shader", "fragment-shader" );
+    gl.useProgram( program );
+    
+    // set all shaders variables locations
+    //ctmLoc = gl.getAttribLocation(program, "ctm" );
+    modelViewMatrixLoc = gl.getUniformLocation(program, " modelViewMatrix" );
+    projectionMatrixLoc = gl.getUniformLocation(program, "projectionMatrix" );
+    lightPositionLoc = gl.getUniformLocation(program, " lightPosition" );
+    ambientProductLoc = gl.getUniformLocation(program, "ambientProduct" );
+    diffuseProductLoc = gl.getUniformLocation(program, "diffuseProduct" );
+    specularProductLoc = gl.getUniformLocation(program, "specularProduct" );
+    shininessLoc = gl.getUniformLocation(program, "shininess" );	
+    gl.uniform4fv( gl.getUniformLocation(program, 
+       "lightPosition"),flatten(lightPosition) );
+    
+    // create some geometry
+    makeAxes();
+    
+    // Create a buffer object, initialize it, and associate it with the
+    //  associated attribute variable in our vertex shader
+    
+    var nBuffer = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, nBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(normals), gl.STATIC_DRAW );
+    
+    var vNormal = gl.getAttribLocation( program, "vNormal" );
+    gl.vertexAttribPointer( vNormal, 4, gl.FLOAT, false, 0, 0 );
+    gl.enableVertexAttribArray( vNormal );
+
+    var vBuffer = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW );
+
+    var vPosition = gl.getAttribLocation( program, "vPosition" );
+    gl.vertexAttribPointer( vPosition, 4, gl.FLOAT, false, 0, 0 );
+    gl.enableVertexAttribArray( vPosition )
+    
+    
+  
+    
+    
+
+    render();
+}
+
+
+function render() {
+    
+    gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    
+    eye = vec3(radius*Math.sin(theta)*Math.cos(phi), 
+        radius*Math.sin(theta)*Math.sin(phi), radius*Math.cos(theta));
+
+    modelViewMatrix = lookAt(eye, at , up);
+    projectionMatrix = ortho(left, right, bottom, ytop, near, far);
+            
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix) );
+    gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix) );
+        
+    drawObjects();
+
+    window.requestAnimFrame(render);
+}
+
+function drawObjects(){
+	var ap= mult(lightAmbient , table[0].materialAmbient);
+	var dp = mult(lightDiffuse, table[0].materialDiffuse);
+	var sp = mult(lightSpecular,table[0].materialSpecular);
+
+	gl.uniform4fv(ambientProductLoc, ap );
+	gl.uniform4fv(diffuseProductLoc, flatten(dp) );
+	gl.uniform4fv(specularProductLoc, flatten(sp));
+	gl.uniform1f(shininessLoc,table[0].materialShininess);
+	/*
+	for (var i = 0; i < table.length; i++){
+		//gl.uniformMatrix4fv(ctmLoc,true, flatten(table[i].ctm));
+		
+		var ap= mult(lightAmbient , table[i].materialAmbient);
+		var dp = mult(lightDiffuse, table[i].materialDiffuse);
+		var sp = mult(lightSpecular,table[i].materialSpecular);
+
+		gl.uniform4fv(ambientProductLoc, ap );
+		gl.uniform4fv(diffuseProductLoc, flatten(dp) );
+		gl.uniform4fv(specularProductLoc, flatten(sp));
+		gl.uniform1f(shininessLoc,table[i].materialShininess);
+
+		gl.drawArrays( gl.TRIANGLES, table[i].startingIndexGL, table[i].sizeGL);
+	}
+	*/
+    gl.drawArrays( gl.TRIANGLES, 0,36);
+	//glFlush();
+}
+

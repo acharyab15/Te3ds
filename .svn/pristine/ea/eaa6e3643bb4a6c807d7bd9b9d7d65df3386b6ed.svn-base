@@ -1,0 +1,7 @@
+var initMouseEvents = function(){
+	 // mouse drag events:
+	 canvas.onmousedown = handleMouseDown;
+	 document.onmouseup = handleMouseUp;
+	 document.onmousemove = handleMouseMove;
+
+}

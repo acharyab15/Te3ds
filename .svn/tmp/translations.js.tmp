@@ -1,0 +1,49 @@
+var TRAN_AMT = 1.0;
+
+// move the last piece towards red wall
+function moveCurrentPieceTowardRedWall(){
+	for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+           table[i].ctm = mult(table[i].ctm,translate(0.0,-TRAN_AMT,0.0));
+	}
+ console.log(table[table.length-1].ctm);
+};
+//move the piece towards blue wall
+function moveCurrentPieceTowardBlueWall(){
+	for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+	     table[i].ctm = mult(table[i].ctm,translate(0.0,TRAN_AMT,0.0));
+	}
+	console.log(table[table.length-1].ctm);
+};
+//move the piece towards yellow wall
+function moveCurrentPieceTowardYellowWall(){
+<<<<<<< .mine
+	table[table.length-1].ctm = mult(table[table.length-1].ctm,translate(TRAN_AMT,0.0,0.0));
+	console.log(table[table.length-1].ctm);
+=======
+	for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+	     table[i].ctm = mult(table[i].ctm,translate(TRAN_AMT,0.0,0.0));
+	}
+	     
+>>>>>>> .r24
+
+};
+//move the piece towards Green wall
+function moveCurrentPieceTowardGreenWall(){
+<<<<<<< .mine
+	table[table.length-1].ctm = mult(table[table.length-1].ctm,translate(-TRAN_AMT,0.0,0.0));
+	console.log(table[table.length-1].ctm);
+=======
+	for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+	         table[i].ctm = mult(table[i].ctm,translate(-TRAN_AMT,0.0,0.0));
+	}
+>>>>>>> .r24
+
+};
+
+//TODO: Move camera up
+
+//TODO: move camera down
+
+
+
+

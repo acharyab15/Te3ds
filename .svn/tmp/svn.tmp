@@ -1,0 +1,56 @@
+
+function loadGamePieces(){
+     loadJSON();	
+}
+
+
+
+// JSON Handling
+
+var loadJSON = function() {
+	var request = new XMLHttpRequest();
+	request.open("GET","http://localhost:8000/pieceComponentCube.json");
+	request.onreadystatechange = function () {
+	    if (request.readyState == 4) {
+	        handleLoadedModel(JSON.parse(request.responseText));
+	    }
+	}
+	request.send();
+	
+	
+}
+
+// DO NOT DELETE THIS FUNCTION! EVEN IF YOU'RE NOT USING IT, JUST COMMENT THIS OUT!
+
+function handleLoadedModel(JSONData) {
+	
+	var JSONsize = JSONData.faces.length;
+    
+    for (var i=0; i<JSONsize; i+=8)
+    {
+    	var v1 = JSONData.faces[i+1];
+    	var v2 = JSONData.faces[i+2];
+    	var v3 = JSONData.faces[i+3];
+    	
+    	var n = JSONData.faces[i+5];
+    	
+    	pointsArray.push(vec4(JSONData.vertices[v1*3], JSONData.vertices[(v1*3)+1], JSONData.vertices[(v1*3)+2], 1.0));
+    	pointsArray.push(vec4(JSONData.vertices[v2*3], JSONData.vertices[(v2*3)+1], JSONData.vertices[(v2*3)+2], 1.0));
+    	pointsArray.push(vec4(JSONData.vertices[v3*3], JSONData.vertices[(v3*3)+1], JSONData.vertices[(v3*3)+2], 1.0));
+    	normalsArray.push(vec3(JSONData.normals[n*3], JSONData.normals[(n*3)+1], JSONData.normals[(n*3)+2]));
+    	normalsArray.push(vec3(JSONData.normals[n*3], JSONData.normals[(n*3)+1], JSONData.normals[(n*3)+2]));
+    	normalsArray.push(vec3(JSONData.normals[n*3], JSONData.normals[(n*3)+1], JSONData.normals[(n*3)+2]));
+    }
+	
+	obj = object("JSON",4,JSONsize*3/8)
+	var JSONobjColor = vec4(0.0,1.0,1.0,1.0);
+	obj.materialDiffuse = JSONobjColor;
+	obj.materialSpecular = JSONobjColor;
+	
+	
+	//upadate  the buffers on the GPU
+     bufferData();
+
+	table.push(obj);
+
+}

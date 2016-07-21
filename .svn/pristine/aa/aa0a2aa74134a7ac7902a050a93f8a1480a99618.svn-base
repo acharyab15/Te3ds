@@ -1,0 +1,381 @@
+var canvas;
+var gl;
+var table = [];
+
+var pointsArray = [];
+var normalsArray = [];
+
+var eye;
+var at = vec3(0.0,0.0,11.0);
+var up = vec3(0.0, 0.0, 1.0);
+var fovy = 45.0;  // Field-of-view in Y direction angle (in degrees)
+var aspect = 1.0;       // Viewport aspect ratio
+var zNear = 0.5;
+var zFar = 40.0;
+
+//geometry 
+var vertices = [
+        vec4( -0.5, -0.5,  0.5, 1.0 ),
+        vec4( -0.5,  0.5,  0.5, 1.0 ),
+        vec4( 0.5,  0.5,  0.5, 1.0 ),
+        vec4( 0.5, -0.5,  0.5, 1.0 ),
+        vec4( -0.5, -0.5, -0.5, 1.0 ),
+        vec4( -0.5,  0.5, -0.5, 1.0 ),
+        vec4( 0.5,  0.5, -0.5, 1.0 ),
+        vec4( 0.5, -0.5, -0.5, 1.0 )
+    ];
+
+
+var lightPosition = vec4( 10.0, 10.0, 10.0, 1.0 );
+var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0 );
+var lightDiffuse = vec4( 1.0, 1.0, 1.0, 1.0 );
+var lightSpecular = vec4( 1.0, 1.0, 1.0, 1.0 );
+
+
+var ambientProductLoc,diffuseProductLoc, specularProductLoc,
+shininessLoc;
+
+var ctm;
+var ctmLoc; 
+var ambientColor, diffuseColor, specularColor;
+var modelView, projection;
+var viewerPos;
+var program;
+
+function quad(a, b, c, d) {
+
+     var t1 = subtract(vertices[b], vertices[a]);
+     var t2 = subtract(vertices[c], vertices[b]);
+     var normal = cross(t1, t2);
+     var normal = vec3(normal);
+     normal = normalize(normal);
+
+     pointsArray.push(vertices[a]); 
+     normalsArray.push(normal); 
+     pointsArray.push(vertices[b]); 
+     normalsArray.push(normal); 
+     pointsArray.push(vertices[c]); 
+     normalsArray.push(normal);   
+     pointsArray.push(vertices[a]);  
+     normalsArray.push(normal); 
+     pointsArray.push(vertices[c]); 
+     normalsArray.push(normal); 
+     pointsArray.push(vertices[d]); 
+     normalsArray.push(normal);    
+}
+
+
+function colorCube()
+{
+    quad( 1, 0, 3, 2 );
+    quad( 2, 3, 7, 6 );
+    quad( 3, 0, 4, 7 );
+    quad( 6, 5, 1, 2 );
+    quad( 4, 5, 6, 7 );
+    quad( 5, 4, 0, 1 );
+    return 36;
+}
+
+
+window.onload = function init() {
+    canvas = document.getElementById( "gl-canvas" );
+    
+    gl = WebGLUtils.setupWebGL( canvas );
+    if ( !gl ) { alert( "WebGL isn't available" ); }
+
+    gl.viewport( 0, 0, canvas.width, canvas.height );
+    gl.clearColor( 0.0, 0.0, 0.0, 1.0 );
+    
+    gl.enable(gl.DEPTH_TEST);
+
+    //
+    //  Load shaders and initialize attribute buffers
+    //
+    program = initShaders( gl, "vertex-shader", "fragment-shader" );
+    gl.useProgram( program );
+    
+    aspect = canvas.width / canvas.height;
+    
+    //make axes
+//    makeAxes();
+    
+    //load JSON
+//    loadJSON();
+    
+    //make grid
+    makeGrid();
+     
+//    var size = colorCube();
+//    obj = object("CUBE",4,size);
+//    table.push(obj)    
+}
+
+var render = function(){
+            
+    gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    
+    eye = vec3(15.0,15.0,30.0);
+    modelView = lookAt( eye, at, up );
+    projection = perspective(fovy,aspect,zNear,zFar);
+    
+    gl.uniformMatrix4fv( gl.getUniformLocation(program,
+            "modelViewMatrix"), false, flatten(modelView) );
+    gl.uniformMatrix4fv( gl.getUniformLocation(program,
+            "projectionMatrix"), false, flatten(projection) );
+    
+    drawObjects();
+            
+}
+
+var object = function(objType,objID,objSize){
+
+     return {
+        type:	objType,
+        id:		objID,
+        size:	objSize,
+        ctm:	mat4(),
+        pos: 	vec3(),
+        materialAmbient:	vec4( 1.0, 0.0, 1.0, 1.0 ),
+        materialDiffuse:	vec4( 1.0, 0.8, 0.0, 1.0 ),
+        materialSpecular:	vec4( 1.0, 0.8, 0.0, 1.0 ),
+        materialShininess:	100.0
+     }
+}
+
+var drawObjects = function(){
+    start =0;
+    for (var i = 0; i < table.length; i++){
+
+        
+        var ap = mult(lightAmbient, table[i].materialAmbient);
+        var dp = mult(lightDiffuse, table[i].materialDiffuse);
+        var sp = mult(lightSpecular, table[i].materialSpecular);
+
+        gl.uniform4fv(ambientProductLoc,flatten(ap) );
+        gl.uniform4fv(diffuseProductLoc,flatten(dp) );
+        gl.uniform4fv( specularProductLoc,flatten(sp) );
+
+        gl.uniform1f(shininessLoc,table[i].materialShininess );
+        gl.uniformMatrix4fv(ctmLoc, false, flatten(table[i].ctm) );
+        //draw the object
+        if (table[i].type == "SQUARE") {
+        	gl.drawArrays( gl.LINE_LOOP, start, table[i].size);
+        }
+        else {
+        	gl.drawArrays( gl.TRIANGLES, start, table[i].size);
+        }
+
+        start += table[i].size;
+    }
+    
+
+}
+
+var makeAxes = function(){
+    var size,axis_color;
+    //Make x axis
+    size = colorCube();
+    axis_color = vec4(1.0,0.0,0.0,1.0);
+    obj = object("CUBE",1,size);
+    obj.ctm = mult(translate(2.5,0.0,0.0),scale(5,.25,.25));
+    obj.materialDiffuse = axis_color;
+    obj.materialSpecular = axis_color;
+    table.push(obj);
+
+    //Make y axis
+    size = colorCube();
+    axis_color = vec4(0.0,1.0,0.0,1.0);
+    obj = object("CUBE",1,size);
+    obj.ctm = mult(translate(0.0,2.5,0.0),scale(.25,5,.25));
+    obj.materialDiffuse = axis_color;
+    obj.materialSpecular = axis_color;
+    table.push(obj);
+
+    //Make z axis
+    size = colorCube();
+    axis_color = vec4(0.0,0.0,1.0,1.0);
+    obj = object("CUBE",1,size);
+    obj.ctm = mult(translate(0.0,0.0,2.5),scale(.25,.25,5));
+    obj.materialDiffuse = axis_color;
+    obj.materialSpecular = axis_color;
+    table.push(obj);
+    
+    doRest();
+
+}
+
+// JSON Handling
+
+var loadJSON = function() {
+	var request = new XMLHttpRequest();
+	request.open("GET","http://localhost:8000/testObj.js");
+	request.onreadystatechange = function () {
+	    if (request.readyState == 4) {
+	        handleLoadedModel(JSON.parse(request.responseText));
+	    }
+	}
+	request.send();
+	
+	
+}
+
+// DO NOT DELETE THIS FUNCTION! EVEN IF YOU'RE NOT USING IT, JUST COMMENT THIS OUT!
+
+function handleLoadedModel(JSONData) {
+	
+	var JSONsize = JSONData.faces.length;
+    
+    for (var i=0; i<JSONsize; i+=8)
+    {
+    	var v1 = JSONData.faces[i+1];
+    	var v2 = JSONData.faces[i+2];
+    	var v3 = JSONData.faces[i+3];
+    	
+    	var n = JSONData.faces[i+5];
+    	
+    	pointsArray.push(vec4(JSONData.vertices[v1*3], JSONData.vertices[(v1*3)+1], JSONData.vertices[(v1*3)+2], 1.0));
+    	pointsArray.push(vec4(JSONData.vertices[v2*3], JSONData.vertices[(v2*3)+1], JSONData.vertices[(v2*3)+2], 1.0));
+    	pointsArray.push(vec4(JSONData.vertices[v3*3], JSONData.vertices[(v3*3)+1], JSONData.vertices[(v3*3)+2], 1.0));
+    	normalsArray.push(vec3(JSONData.normals[n*3], JSONData.normals[(n*3)+1], JSONData.normals[(n*3)+2]));
+    	normalsArray.push(vec3(JSONData.normals[n*3], JSONData.normals[(n*3)+1], JSONData.normals[(n*3)+2]));
+    	normalsArray.push(vec3(JSONData.normals[n*3], JSONData.normals[(n*3)+1], JSONData.normals[(n*3)+2]));
+    }
+	
+	obj = object("JSON",4,JSONsize*3/8)
+	var JSONobjColor = vec4(0.0,1.0,1.0,1.0);
+	obj.materialDiffuse = JSONobjColor;
+	obj.materialSpecular = JSONobjColor;
+	table.push(obj);
+
+	doRest();
+}
+
+function makeSquare() {
+	var squareNormal = normalize(vec3(0.0, 0.0, 1.0));
+	
+    pointsArray.push(vec4(0.0, 0.0, 0.0, 1.0)); 
+    normalsArray.push(squareNormal);
+    
+    pointsArray.push(vec4(1.0, 0.0, 0.0, 1.0)); 
+    normalsArray.push(squareNormal);
+    
+    pointsArray.push(vec4(1.0, 1.0, 0.0, 1.0)); 
+    normalsArray.push(squareNormal);
+    
+    pointsArray.push(vec4(0.0, 1.0, 0.0, 1.0)); 
+    normalsArray.push(squareNormal);
+    
+    return 4;
+}
+
+var makeGrid = function() {
+	
+	var size,gridColor;
+    
+	// floor
+    gridColor = vec4(1.0, 1.0, 1.0, 1.0);
+    
+    for (var i = -5; i < 5; i++) {
+    	for (var j = -5; j < 5; j++) {
+    		size = makeSquare();
+    		obj = object("SQUARE",1,size);
+    		obj.ctm = translate(i, j, 0.0);
+    		obj.materialDiffuse = gridColor;
+    		obj.materialSpecular = gridColor;
+    		table.push(obj);
+    	}
+    }
+    
+    // X-wall (red)
+    gridColor = vec4(1.0, 0.0, 0.0, 1.0);
+
+    for (var i = -5; i < 5; i++) {
+    	for (var j = -5; j < 15; j++) {
+    		size = makeSquare();
+    		obj = object("SQUARE",1,size);
+    		obj.ctm = mult(translate(i, -5, j+5),rotate(90,[1.0,0.0,0.0]));
+    		obj.materialDiffuse = gridColor;
+    		obj.materialSpecular = gridColor;
+    		table.push(obj);
+    	}
+    }
+    
+    // Y-wall (green)
+    gridColor = vec4(0.0, 1.0, 0.0, 1.0);
+
+    for (var i = -5; i < 5; i++) {
+    	for (var j = -5; j < 15; j++) {
+    		size = makeSquare();
+    		obj = object("SQUARE",1,size);
+    		obj.ctm = mult(translate(-5, i, j+5),rotate(-90,[0.0,1.0,0.0]));
+    		obj.materialDiffuse = gridColor;
+    		obj.materialSpecular = gridColor;
+    		table.push(obj);
+    	}
+    }
+    
+    // X-wall-2 (blue)
+    gridColor = vec4(0.0, 0.0, 1.0, 1.0);
+
+    for (var i = -5; i < 5; i++) {
+    	for (var j = -5; j < 15; j++) {
+    		size = makeSquare();
+    		obj = object("SQUARE",1,size);
+    		obj.ctm = mult(translate(i, 5, j+5),rotate(90,[1.0,0.0,0.0]));
+    		obj.materialDiffuse = gridColor;
+    		obj.materialSpecular = gridColor;
+    		table.push(obj);
+    	}
+    }
+    
+    // Y-wall-2 (yellow)
+    gridColor = vec4(1.0, 1.0, 0.0, 1.0);
+
+    for (var i = -5; i < 5; i++) {
+    	for (var j = -5; j < 15; j++) {
+    		size = makeSquare();
+    		obj = object("SQUARE",1,size);
+    		obj.ctm = mult(translate(5, i, j+5),rotate(-90,[0.0,1.0,0.0]));
+    		obj.materialDiffuse = gridColor;
+    		obj.materialSpecular = gridColor;
+    		table.push(obj);
+    	}
+    }
+    
+    doRest();
+}
+
+function doRest(){
+	var nBuffer = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, nBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(normalsArray), gl.STATIC_DRAW );
+    
+    var vNormal = gl.getAttribLocation( program, "vNormal" );
+    gl.vertexAttribPointer( vNormal, 3, gl.FLOAT, false, 0, 0 );
+    gl.enableVertexAttribArray( vNormal );
+
+    var vBuffer = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(pointsArray), gl.STATIC_DRAW );
+    
+    var vPosition = gl.getAttribLocation(program, "vPosition");
+    gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(vPosition);
+
+    
+   
+    
+    // initialize pointers to shaders variables
+    ambientProductLoc = gl.getUniformLocation(program, "ambientProduct");
+    diffuseProductLoc = gl.getUniformLocation(program, "diffuseProduct");
+    specularProductLoc = gl.getUniformLocation(program, "specularProduct");  
+    shininessLoc  = gl.getUniformLocation(program,"shininess");
+    ctmLoc = gl.getUniformLocation(program,"ctm");
+
+    // set lights positions in shaders
+    gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"), 
+        flatten(lightPosition) );
+
+    // render the scene
+    render();
+}

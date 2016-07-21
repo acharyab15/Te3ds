@@ -1,0 +1,15 @@
+var TIMER = 1000;
+setInterval(function(){dropButton()},TIMER);
+var IS_PLAYING = false;
+function addRandomShape(){
+	var shapeNames =["C","L","I","T","S"];
+	var index = Math.floor(Math.random()*5);
+     addShape(shapeNames[index]);	
+	
+}
+
+function startGame(){
+	addRandomShape();
+	IS_PLAYING =true;
+}
+

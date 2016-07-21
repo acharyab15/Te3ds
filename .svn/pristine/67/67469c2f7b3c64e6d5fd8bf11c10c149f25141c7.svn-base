@@ -1,0 +1,166 @@
+//**********************************************************************************************//
+                                     // GLOBAL VARIABLES DECLARATION
+//**********************************************************************************************//
+var canvas; // tetris canvas
+var canvasContainer;
+var gl; // webgl context variable
+
+var table = []; // list of all objects in the scene
+var gridTable =[];
+var nextTable =[];
+
+var pointsArray = []; // list of  objects vertices
+var normalsArray = []; // list of object normals
+var cubesPoints =[];
+var cubesNormals =[];
+var nextCubesPoints =[];
+var nextCubesNormals =[];
+
+
+//CAMERA PARAMETERS******************************//
+var eye;
+var at = vec3(0.0,0.0,0.0);
+var up = vec3(0.0, 0.0, 1.0);
+var fovy = 45.0;  // Field-of-view in Y direction angle (in degrees)
+var aspect = 1.0; // Viewport aspect ratio
+var zNear = 0.5;
+var zFar = 100.0;
+
+//LIGHT ******************************************//
+var lightPosition = vec4( 5.0, 5.0, 30.0, 1.0 );
+var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0 );
+var lightDiffuse = vec4( 1.0, 1.0, 1.0, 1.0 );
+var lightSpecular = vec4( 1.0, 1.0, 1.0, 1.0 );
+
+// POINTERS FOR SHADERS VARIABLES *******************//
+var ambientProductLoc,diffuseProductLoc, specularProductLoc, shininessLoc,ctmLoc;
+
+// matrices for geomtry transformations*****************//
+var ctm;
+var modelView, projection,modelViewInit;
+
+
+//variable pointing to shaders for this game************//
+var program;
+
+//*********************************************************************************************************//
+                              // WEBGEL INIT FUNCTION
+//*********************************************************************************************************//
+window.onload = function init() {
+    canvas = document.getElementById( "gl-canvas" );
+    canvasContainer = document.getElementById( "gl-canvas-container" );
+    window.addEventListener('resize', resizeCanvas);
+    
+    gl = WebGLUtils.setupWebGL( canvas );
+    if ( !gl ) { alert( "WebGL isn't available" ); }
+    // initialize the size of the canvas
+     resizeCanvas();
+    gl.clearColor( 0.0, 0.0, 0.0, 1.0 ); // set canvas background to black
+    gl.enable(gl.DEPTH_TEST);
+    
+    initMouseEvents(); // attach mouse events
+    initKeyboardEvents(); // attach keyboard  events
+     
+    program = initShaders( gl, "vertex-shader", "fragment-shader" );
+    gl.useProgram( program );
+    
+    eye = vec3(0.01,1.0,40.0);  // set up initial camera position
+    modelView = lookAt( eye, at, up );
+    modelViewInit = lookAt( eye, at, up );
+    // Initialize the model view matrix 
+    
+    projection = perspective(fovy,aspect,zNear,zFar);
+  
+    
+    //Initialize pointers to shaders variables
+    ambientProductLoc = gl.getUniformLocation(program, "ambientProduct");
+    diffuseProductLoc = gl.getUniformLocation(program, "diffuseProduct");
+    specularProductLoc = gl.getUniformLocation(program, "specularProduct");  
+    shininessLoc  = gl.getUniformLocation(program,"shininess");
+    ctmLoc = gl.getUniformLocation(program,"ctm");
+    
+    // set lights positions in shaders
+    gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"), flatten(lightPosition) );
+  
+    makeGrid(); // make the grid(container) of the game
+    
+    loadJSON(); // load different tetris pieces
+    
+    bufferData(); // at this point send to the GPU the grid data
+    // initiate the eventLoop
+    tick();
+    $('.shape').hide();
+    $('#'+shapeNames[nextShape]).show()
+    
+    
+    $('#gl-canvas').mousewheel(function(event, delta) {
+    	zoom(event, delta);
+    });
+      
+}
+
+// event loop
+function tick() {
+    requestAnimFrame(tick);
+    render();
+ }
+
+ // buffer data
+
+function bufferData(){
+	var allPoints =[];
+	allPoints = allPoints.concat(pointsArray,nextCubesPoints,cubesPoints);
+	var allNormals =[];
+	allNormals = allNormals.concat(normalsArray,nextCubesNormals,cubesNormals);
+	
+    // set up buffer on the GPU
+    var nBuffer = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, nBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(allNormals), gl.STATIC_DRAW );
+    
+    var vNormal = gl.getAttribLocation( program, "vNormal" );
+    gl.vertexAttribPointer( vNormal, 3, gl.FLOAT, false, 0, 0 );
+    gl.enableVertexAttribArray( vNormal );
+
+    var vBuffer = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(allPoints), gl.STATIC_DRAW );
+    
+    var vPosition = gl.getAttribLocation(program, "vPosition");
+    gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(vPosition);
+	
+}
+
+
+//*******************************************************************************************************//
+                //WEBGL DISPLAY FUNCTION
+//*******************************************************************************************************//
+var render = function(){
+	
+    gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    
+    
+    
+    gl.uniformMatrix4fv( gl.getUniformLocation(program,
+            "modelViewMatrix"), false, flatten(modelView) );
+    gl.uniformMatrix4fv( gl.getUniformLocation(program,
+            "projectionMatrix"), false, flatten(projection) );
+   
+    
+    drawObjects();
+            
+}
+
+
+// helper function
+function checkDist(u, v) {
+	return Math.sqrt(Math.pow((u[0] - v[0]), 2) + Math.pow((u[1] - v[1]), 2) + Math.pow((u[2] - v[2]), 2));
+}
+function resizeCanvas() {
+	            $('#tetris3dContainer').height($(window).height());
+                canvas.width = $(canvasContainer).width();
+                canvas.height = $(canvasContainer).height();
+                gl.viewport( 0, 0, canvas.width, canvas.height );
+                aspect = (canvas.width/canvas.height); //Initialize the the canvas aspect ratio
+ };

@@ -1,0 +1,348 @@
+var LAST_PIECE_START_INDEX =0;
+var FIRST_PIECE_START_INDEX =0;
+var TETRIS_CUBE ={
+		normals:[],
+		vertices:[],
+		size:0
+}
+var COLORS = [vec4(1.0, 0.0, 0.0, 1.0),
+              vec4(0.0, 1.0, 0.0, 1.0),
+              vec4(0.0, 0.0, 1.0, 1.0),
+              vec4(1.0, 1.0, 0.0, 1.0),
+              vec4(1.0, 0.0, 1.0, 1.0),
+              vec4(0.0, 1.0, 1.0, 1.0)];
+
+function SHAPE (n){
+	return {
+	     name:n,
+	     cubes:[]
+	}
+}
+
+function addShape(type){
+	 var shape;
+	 switch (type) {
+	 	case "C":
+	 		shape = createCShape();
+	 		break;
+	 	case "L":
+	 		shape = createLShape();
+	 		break;
+	 	case "I":
+	 		shape = createIShape();
+	 		break;
+	 	case "T":
+	 		shape = createTShape();
+	 		break;
+	 	case "S":
+	 		shape = createSShape();
+	 		break;
+	 }
+	 
+	
+	 var shapeSize = shape.cubes.length;
+     for (var i=0; i<shapeSize;i++){
+        cubesPoints = cubesPoints.concat(TETRIS_CUBE.vertices)
+        cubesNormals = cubesNormals.concat(TETRIS_CUBE.normals);
+     
+     }
+     
+     
+     bufferData();
+     
+     LAST_PIECE_START_INDEX = table.length;
+     for (var i=0; i<shapeSize;i++){
+    	 table.push(shape.cubes[i]);
+     
+     }
+     
+}
+
+
+
+
+
+
+// JSON Handling
+
+var loadJSON = function() {
+	/*
+	var request = new XMLHttpRequest();
+	request.open("GET","http://localhost:8000/pieceComponentCube.json");
+	request.onreadystatechange = function () {
+	    if (request.readyState == 4) {
+	        handleLoadedModel(JSON.parse(request.responseText));
+	    }
+	}
+	request.send();
+	
+	*/
+	 handleLoadedModel(CUBE_DATA);
+	
+}
+
+// DO NOT DELETE THIS FUNCTION! EVEN IF YOU'RE NOT USING IT, JUST COMMENT THIS OUT!
+
+function handleLoadedModel(JSONData) {
+	
+	var JSONsize = JSONData.faces.length;
+    
+    for (var i=0; i<JSONsize; i+=8)
+    {
+    	var v1 = JSONData.faces[i+1];
+    	var v2 = JSONData.faces[i+2];
+    	var v3 = JSONData.faces[i+3];
+    	
+    	var n = JSONData.faces[i+5];
+    	
+    	TETRIS_CUBE.vertices.push(vec4(JSONData.vertices[v1*3], JSONData.vertices[(v1*3)+1], JSONData.vertices[(v1*3)+2], 1.0));
+    	TETRIS_CUBE.vertices.push(vec4(JSONData.vertices[v2*3], JSONData.vertices[(v2*3)+1], JSONData.vertices[(v2*3)+2], 1.0));
+    	TETRIS_CUBE.vertices.push(vec4(JSONData.vertices[v3*3], JSONData.vertices[(v3*3)+1], JSONData.vertices[(v3*3)+2], 1.0));
+    	TETRIS_CUBE.normals.push(vec3(JSONData.normals[n*3], JSONData.normals[(n*3)+1], JSONData.normals[(n*3)+2]));
+    	TETRIS_CUBE.normals.push(vec3(JSONData.normals[n*3], JSONData.normals[(n*3)+1], JSONData.normals[(n*3)+2]));
+    	TETRIS_CUBE.normals.push(vec3(JSONData.normals[n*3], JSONData.normals[(n*3)+1], JSONData.normals[(n*3)+2]));
+    }
+    
+    TETRIS_CUBE.size = JSONsize*3/8;
+    
+}
+
+//TODO: create CUBE shape
+ function createCShape(){
+	 var index = Math.floor(Math.random()*6);
+	 var color = COLORS[index];
+	 
+	 var CShape = SHAPE("C");
+	 var c1 = object("CUBE",1,TETRIS_CUBE.size); 
+	 c1.ctm = mult(c1.ctm,translate(0.0,0.0,0.0+20));
+	 c1.pos = vec3(0.0, 0.0, 0.0+20);
+	 c1.materialDiffuse = color;
+	 c1.materialSpecular = color;
+	 c1.forPiece = "C";
+	 CShape.cubes.push(c1);
+	 var c2 = object("CUBE",1,TETRIS_CUBE.size); //  move 1 unit in x
+	 c2.ctm = mult(c2.ctm,translate(1.0,0.0,0.0+20));
+	 c2.pos = vec3(1.0, 0.0, 0.0+20);
+	 c2.materialDiffuse = color;
+	 c2.materialSpecular = color;
+	 c2.forPiece = "C";
+	 CShape.cubes.push(c2);
+	 var c3 = object("CUBE",1,TETRIS_CUBE.size); //  move  1 unit in y
+	 c3.ctm = mult(c3.ctm,translate(0.0,1.0,0.0+20));
+	 c3.pos = vec3(0.0, 1.0, 0.0+20);
+	 c3.materialDiffuse = color;
+	 c3.materialSpecular = color;
+	 c3.forPiece = "C";
+	 CShape.cubes.push(c3);
+	 var c4 = object("CUBE",1,TETRIS_CUBE.size); //  move  1 unit in z
+	 c4.ctm = mult(c4.ctm,translate(1.0,1.0,0.0+20));
+	 c4.pos = vec3(1.0, 1.0, 0.0+20);
+	 c4.materialDiffuse = color;
+	 c4.materialSpecular = color;
+	 c4.forPiece = "C";
+	 CShape.cubes.push(c4);
+	 var c5 = object("CUBE",1,TETRIS_CUBE.size); 
+	 c5.ctm = mult(c5.ctm,translate(0.0,0.0,1.0+20));
+	 c5.pos = vec3(0.0, 0.0, 1.0+20);
+	 c5.materialDiffuse = color;
+	 c5.materialSpecular = color;
+	 c5.forPiece = "C";
+	 CShape.cubes.push(c5);
+	 var c6 = object("CUBE",1,TETRIS_CUBE.size); //  move 1 unit in x
+	 c6.ctm = mult(c6.ctm,translate(1.0,0.0,1.0+20));
+	 c6.pos = vec3(1.0, 0.0, 1.0+20);
+	 c6.materialDiffuse = color;
+	 c6.materialSpecular = color;
+	 c6.forPiece = "C";
+	 CShape.cubes.push(c6);
+	 var c7 = object("CUBE",1,TETRIS_CUBE.size); //  move  1 unit in y
+	 c7.ctm = mult(c7.ctm,translate(0.0,1.0,1.0+20));
+	 c7.pos = vec3(0.0, 1.0, 1.0+20);
+	 c7.materialDiffuse = color;
+	 c7.materialSpecular = color;
+	 c7.forPiece = "C";
+	 CShape.cubes.push(c7);
+	 var c8 = object("CUBE",1,TETRIS_CUBE.size); //  move  1 unit in z
+	 c8.ctm = mult(c8.ctm,translate(1.0,1.0,1.0+20));
+	 c8.pos = vec3(1.0, 1.0, 1.0+20);
+	 c8.materialDiffuse = color;
+	 c8.materialSpecular = color;
+	 c8.forPiece = "C";
+	 CShape.cubes.push(c8);
+	 
+   return CShape;	 
+	 
+	 
+ }
+ 
+
+//TODO:  create L  shape
+function createLShape(){
+	 var index = Math.floor(Math.random()*6);
+	 var color = COLORS[index];
+	 
+	 var CShape = SHAPE("L");
+	 var c1 = object("CUBE",1,TETRIS_CUBE.size); 
+	 c1.ctm = mult(c1.ctm,translate(0.0,0.0,0.0+20));
+	 c1.pos = vec3(0.0, 0.0, 0.0+20);
+	 c1.materialDiffuse = color;
+	 c1.materialSpecular = color;
+	 c1.forPiece = "L";
+	 CShape.cubes.push(c1);
+	 var c2 = object("CUBE",1,TETRIS_CUBE.size); //  move 1 unit in x
+	 c2.ctm = mult(c2.ctm,translate(1.0,0.0,0.0+20));
+	 c2.pos = vec3(1.0, 0.0, 0.0+20);
+	 c2.materialDiffuse = color;
+	 c2.materialSpecular = color;
+	 c2.forPiece = "L";
+	 CShape.cubes.push(c2);
+	 var c3 = object("CUBE",1,TETRIS_CUBE.size); //  move  1 unit in y
+	 c3.ctm = mult(c3.ctm,translate(0.0,0.0,1.0+20));
+	 c3.pos = vec3(0.0, 0.0, 1.0+20);
+	 c3.materialDiffuse = color;
+	 c3.materialSpecular = color;
+	 c3.forPiece = "L";
+	 CShape.cubes.push(c3);
+	 var c4 = object("CUBE",1,TETRIS_CUBE.size); //  move  1 unit in z
+	 c4.ctm = mult(c4.ctm,translate(0.0,0.0,2.0+20));
+	 c4.pos = vec3(0.0, 0.0, 2.0+20);
+	 c4.materialDiffuse = color;
+	 c4.materialSpecular = color;
+	 c4.forPiece = "L";
+	 CShape.cubes.push(c4);
+	 
+   return CShape;	 
+	 
+	 
+ }
+
+//TODO: create I shape
+function createIShape(){
+	 var index = Math.floor(Math.random()*6);
+	 var color = COLORS[index];
+	 
+	 var CShape = SHAPE("I");
+	 var c1 = object("CUBE",1,TETRIS_CUBE.size); 
+	 c1.ctm = mult(c1.ctm,translate(0.0,0.0,0.0+20));
+	 c1.pos = vec3(0.0, 0.0, 0.0+20);
+	 c1.materialDiffuse = color;
+	 c1.materialSpecular = color;
+	 c1.forPiece = "I";
+	 CShape.cubes.push(c1);
+	 var c2 = object("CUBE",1,TETRIS_CUBE.size); //  move 1 unit in x
+	 c2.ctm = mult(c2.ctm,translate(0.0,0.0,1.0+20));
+	 c2.pos = vec3(0.0, 0.0, 1.0+20);
+	 c2.materialDiffuse = color;
+	 c2.materialSpecular = color;
+	 c2.forPiece = "I";
+	 CShape.cubes.push(c2);
+	 var c3 = object("CUBE",1,TETRIS_CUBE.size); //  move  1 unit in y
+	 c3.ctm = mult(c3.ctm,translate(0.0,0.0,2.0+20));
+	 c3.pos = vec3(0.0, 0.0, 2.0+20);
+	 c3.materialDiffuse = color;
+	 c3.materialSpecular = color;
+	 c3.forPiece = "I";
+	 CShape.cubes.push(c3);
+	 var c4 = object("CUBE",1,TETRIS_CUBE.size); //  move  1 unit in z
+	 c4.ctm = mult(c4.ctm,translate(0.0,0.0,3.0+20));
+	 c4.pos = vec3(0.0, 0.0, 3.0+20);
+	 c4.materialDiffuse = color;
+	 c4.materialSpecular = color;
+	 c4.forPiece = "I";
+	 CShape.cubes.push(c4);
+	 
+   return CShape;	 
+	 
+	 
+ }
+
+//TODO: create T shape
+function createTShape(){
+	 var index = Math.floor(Math.random()*6);
+	 var color = COLORS[index];
+	 
+	 var CShape = SHAPE("T");
+	 var c1 = object("CUBE",1,TETRIS_CUBE.size); 
+	 c1.ctm = mult(c1.ctm,translate(0.0,0.0,0.0+20));
+	 c1.pos = vec3(0.0, 0.0, 0.0+20);
+	 c1.materialDiffuse = color;
+	 c1.materialSpecular = color;
+	 c1.forPiece = "T";	 
+  	CShape.cubes.push(c1);
+	 var c2 = object("CUBE",1,TETRIS_CUBE.size); //  move 1 unit in x
+	 c2.ctm = mult(c2.ctm,translate(1.0,0.0,0.0+20));
+	 c2.pos = vec3(1.0, 0.0, 0.0+20);
+	 c2.materialDiffuse = color;
+	 c2.materialSpecular = color;
+	 c2.forPiece = "T";
+	 CShape.cubes.push(c2);
+	 var c3 = object("CUBE",1,TETRIS_CUBE.size); //  move  1 unit in y
+	 c3.ctm = mult(c3.ctm,translate(-1.0,0.0,0.0+20));
+	 c3.pos = vec3(-1.0, 0.0, 0.0+20);
+	 c3.materialDiffuse = color;
+	 c3.materialSpecular = color;
+	 c3.forPiece = "T";
+	 CShape.cubes.push(c3);
+	 var c4 = object("CUBE",1,TETRIS_CUBE.size); //  move  1 unit in z
+	 c4.ctm = mult(c4.ctm,translate(0.0,0.0,1.0+20));
+	 c4.pos = vec3(0.0, 0.0, 1.0+20);
+	 c4.materialDiffuse = color;
+	 c4.materialSpecular = color;
+	 c4.forPiece = "T";
+	 CShape.cubes.push(c4);
+	 
+   return CShape;	 
+	 
+	 
+ }
+
+//TODO: create Shape
+function createSShape(){
+	 var index = Math.floor(Math.random()*6);
+	 var color = COLORS[index];
+	 
+	 var CShape = SHAPE("S");
+	 var c1 = object("CUBE",1,TETRIS_CUBE.size); 
+	 c1.ctm = mult(c1.ctm,translate(0.0,0.0,0.0+20));
+	 c1.pos = vec3(0.0, 0.0, 0.0+20);
+	 c1.materialDiffuse = color;
+	 c1.materialSpecular = color;
+	 c1.forPiece = "S";
+	 CShape.cubes.push(c1);
+	 var c2 = object("CUBE",1,TETRIS_CUBE.size); //  move 1 unit in x
+	 c2.ctm = mult(c2.ctm,translate(-1.0,0.0,0.0+20));
+	 c2.pos = vec3(-1.0, 0.0, 0.0+20);
+	 c2.materialDiffuse = color;
+	 c2.materialSpecular = color;
+	 c2.forPiece = "S";
+	 CShape.cubes.push(c2);
+	 var c3 = object("CUBE",1,TETRIS_CUBE.size); //  move  1 unit in y
+	 c3.ctm = mult(c3.ctm,translate(0.0,0.0,1.0+20));
+	 c3.pos = vec3(0.0, 0.0, 1.0+20);
+	 c3.materialDiffuse = color;
+	 c3.materialSpecular = color;
+	 c3.forPiece = "S";
+	 CShape.cubes.push(c3);
+	 var c4 = object("CUBE",1,TETRIS_CUBE.size); //  move  1 unit in z
+	 c4.ctm = mult(c4.ctm,translate(1.0,0.0,1.0+20));
+	 c4.pos = vec3(1.0, 0.0, 1.0+20);
+	 c4.materialDiffuse = color;
+	 c4.materialSpecular = color;
+	 c4.forPiece = "S";
+	 CShape.cubes.push(c4);
+	 
+   return CShape;	 
+	 
+	 
+ }
+
+
+
+
+
+
+
+
+
+
+

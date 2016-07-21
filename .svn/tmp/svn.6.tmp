@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title> Tetris 3D</title>
+    <script id="vertex-shader" type="x-shader/x-vertex">
+    	attribute vec4 vPosition;
+		attribute vec4 vNormal;
+		uniform mat4 ctm;
+		varying vec3 N;
+		varying vec3 L;
+		varying vec3 E;
+		uniform mat4 modelViewMatrix;
+		uniform mat4 projectionMatrix;
+		uniform vec4 lightPosition;
+		void main(){
+			vec3 pos = (modelViewMatrix*vPosition).xyz;
+    		N = (modelViewMatrix*ctm*vNormal).xyz;
+    		E = -(modelViewMatrix*ctm*vPosition).xyz;
+    		L = (modelViewMatrix*lightPosition).xyz;
+    		if( lightPosition.w != 0.0 ) {
+	     		L = (modelViewMatrix*lightPosition).xyz - pos;
+    		}
+    		gl_Position = (projectionMatrix*modelViewMatrix*ctm*vPosition)/vPosition.w;
+ 		}
+	</script>
+	<script id="fragment-shader" type="x-shader/x-fragment">
+		#ifdef GL_ES
+			precision highp float;
+		#endif
+		uniform vec4 ambientProduct;
+		uniform vec4 diffuseProduct;
+		uniform vec4 specularProduct;
+		uniform float shininess;
+		varying vec3 N;
+		varying vec3 L; 
+		varying vec3 E;
+		void main(){    
+    		vec4 fColor;
+    		vec3 H = normalize( L + E );
+    		vec4 ambient = ambientProduct;
+			float Kd = max( -dot(L, N), 0.0 );
+    		vec4  diffuse = Kd*diffuseProduct;
+			float Ks = pow( max(dot(N, H), 0.0), shininess );
+    		vec4  specular = Ks*specularProduct;
+    		if( dot(L, N) < 0.0 ){
+            	specular = vec4(0.0, 0.0, 0.0, 1.0);
+     		}
+
+    		fColor = ambient + diffuse +specular;
+    		fColor.a = 1.0;
+
+    		gl_FragColor = fColor;
+		}
+    </script>
+	
+
+	<!-- Loading angel include scripts-->
+	<script type="text/javascript" src="angel_include/webgl-utils.js"></script>
+	<script type="text/javascript" src="angel_include/initShaders.js"></script>
+	<script type="text/javascript" src="angel_include/MV.js"></script>
+
+	<!-- loading tetris scripts-->
+	<script type="text/javascript" src="tetris3d.js"></script>
+	<script type="text/javascript" src="container.js"></script>
+	<script type="text/javascript" src="pieces.js"></script>
+	<script type="text/javascript" src="object.js"></script>
+	<script type="text/javascript" src="mouseEvents.js"></script>
+	<script type="text/javascript" src="keyboardEvents.js"></script>
+	<script type="text/javascript" src="translations.js"></script>
+	<script type="text/javascript" src="rotations.js"></script>
+	<script type="text/javascript" src="gameController.js"></script>
+	
+	
+
+	<!-- loading tetris3d stylesheet-->
+	<link rel="stylesheet" href="css/tetris3d.css">
+
+</head>
+<body>
+
+
+    	<canvas id="gl-canvas" class="col-xs-6" width=1260 height=663 >
+				<p>Oops ... your browser doesn't support the HTML5 canvas element</p>
+		</canvas>
+		
+		
+
+</body>
+</html>

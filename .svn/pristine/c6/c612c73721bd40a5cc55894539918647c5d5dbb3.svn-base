@@ -1,0 +1,109 @@
+var TRAN_AMT = 1.0;
+
+// move the last piece towards red wall
+function moveCurrentPieceTowardRedWall(){
+	var tempList = [];
+	for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+           	tempList.push(table[i].ctm[1][3]);
+	}
+	if ((Math.min.apply(Math, tempList)) == -5) {
+		return;
+	} else {
+		for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+           	table[i].ctm = mult(table[i].ctm,translate(0.0,-TRAN_AMT,0.0));
+           	table[i].pos[1] -= TRAN_AMT;
+		}
+	}
+			
+};
+//move the piece towards blue wall
+function moveCurrentPieceTowardBlueWall(){
+	var tempList = [];
+	for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+           	tempList.push(table[i].ctm[1][3]);
+	}
+	if ((Math.max.apply(Math, tempList)) == 4) {
+		return;
+	} else {
+		for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+           	table[i].ctm = mult(table[i].ctm,translate(0.0,+TRAN_AMT,0.0));
+           	table[i].pos[1] += TRAN_AMT;
+		}
+	}
+	
+};
+//move the piece towards yellow wall
+function moveCurrentPieceTowardYellowWall(){
+	var tempList = [];
+	for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+           	tempList.push(table[i].ctm[0][3]);
+           	
+	}
+	if ((Math.max.apply(Math, tempList)) == 5) {
+		return;
+	} else {
+		for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+           	table[i].ctm = mult(table[i].ctm,translate(TRAN_AMT,0.0,0.0));
+           	table[i].pos[0] += TRAN_AMT;
+		}
+	}
+	     
+
+};
+//move the piece towards Green wall
+function moveCurrentPieceTowardGreenWall(){
+var tempList = [];
+	for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+           	tempList.push(table[i].ctm[0][3]);
+            
+	}
+	if ((Math.min.apply(Math, tempList)) == -4) {
+		return;
+	} else {
+		for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+           	table[i].ctm = mult(table[i].ctm,translate(-TRAN_AMT,0.0,0.0));
+           	table[i].pos[0] -= TRAN_AMT;
+		}
+	}
+	
+};
+
+function dropButton(){
+	var tempList = [];
+	for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+           	tempList.push(table[i].ctm[2][3]);
+           if(IsCubeCommonZ(table[i].pos)){
+        	  addRandomShape();  
+        	  return;
+           }
+           
+	}
+	if ((Math.min.apply(Math, tempList)) == 0) {
+		    addRandomShape();
+		return;
+	} else {
+		for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+           	table[i].ctm = mult(table[i].ctm,translate(0.0,0.0,-TRAN_AMT));
+           	table[i].pos[2] -= TRAN_AMT;
+		}
+	}
+	
+};
+
+function IsCubeCommonZ(pos){
+	for(var i=FIRST_PIECE_START_INDEX;i < LAST_PIECE_START_INDEX;i++){
+	    cube = table[i];
+	    if(cube.pos[2]==(pos[2]-1)&&cube.pos[0]==pos[0]&& cube.pos[1]==pos[1]){
+	      return true;
+	    }
+	}
+	return false;
+}
+
+//TODO: Move camera up
+
+//TODO: move camera down
+
+
+
+

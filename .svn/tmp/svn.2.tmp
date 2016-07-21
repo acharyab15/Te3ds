@@ -1,0 +1,32 @@
+var TRAN_AMT = 1.0;
+
+// move the last piece towards red wall
+function moveCurrentPieceTowardRedWall(){
+ table[table.length-1].ctm = mult(table[table.length-1].ctm,translate(0.0,-TRAN_AMT,0.0));
+ console.log(table[table.length-1].ctm);
+};
+//move the piece towards blue wall
+function moveCurrentPieceTowardBlueWall(){
+	table[table.length-1].ctm = mult(table[table.length-1].ctm,translate(0.0,TRAN_AMT,0.0));
+	console.log(table[table.length-1].ctm);
+};
+//move the piece towards yellow wall
+function moveCurrentPieceTowardYellowWall(){
+	table[table.length-1].ctm = mult(table[table.length-1].ctm,translate(TRAN_AMT,0.0,0.0));
+	console.log(table[table.length-1].ctm);
+
+};
+//move the piece towards Green wall
+function moveCurrentPieceTowardGreenWall(){
+	table[table.length-1].ctm = mult(table[table.length-1].ctm,translate(-TRAN_AMT,0.0,0.0));
+	console.log(table[table.length-1].ctm);
+
+};
+
+//TODO: Move camera up
+
+//TODO: move camera down
+
+
+
+

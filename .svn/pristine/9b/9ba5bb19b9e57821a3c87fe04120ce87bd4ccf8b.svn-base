@@ -1,0 +1,99 @@
+var ROT_AMT =5.0;
+var mouseDown = false;
+var lastMouseX = null;
+var lastMouseY = null;
+
+// handle mouse  down event call back: see what it is attached to in mouseEvents.js
+function handleMouseDown(event) {
+    mouseDown = true;
+    lastMouseX = event.clientX;
+    lastMouseY = event.clientY;
+  }
+// handle mouse  up event call back: see what it is attached to in mouseEvents.js
+function handleMouseUp(event) {
+    mouseDown = false;
+}
+// handle mouse move event call back: see what it is attached to in mouseEvents.js
+function handleMouseMove(event) {
+    if (!mouseDown) {
+      return;
+    }
+    var newX = event.clientX;
+    var newY = event.clientY;
+    var deltaX = newX - lastMouseX;
+    var deltaY = newY - lastMouseY;
+    // do the track ball rotation
+    trackBallRotation(deltaX,deltaY);
+    // update  last_x, last_y
+    lastMouseX = newX
+    lastMouseY = newY;
+  }
+
+  // TODO: track ball rotation(given deltaX and deltaY)
+
+ function trackBallRotation(deltaX,deltaY){
+	 
+	 //TODO:  this definitely not the trackball rotation. So we need to implement what we did in the cad project
+    var rotx = rotate(-deltaX / 10, [0, 1, 0]);
+    var roty = rotate(-deltaY / 10, [1, 0, 0]);
+    var rot = mult(rotx,roty);
+    modelView = mult(modelView,rot);
+ }
+ 
+// TODO: rotate the last piece about Z-axis
+  function rotateAboutZ () {
+  var tempListLength = [];
+  var tempListPos = [];
+  for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+            tempListLength.push(mag(table[i].pos));
+            tempListPos.push(table[i].pos);
+  }
+
+  var minPosIndex = tempListLength.indexOf(Math.min.apply(Math, tempListLength));
+
+  for (var i = LAST_PIECE_START_INDEX; i< table.length; i++) {
+            /*table[i].ctm = mult(table[i].ctm,
+            translate(-tempListPos[minPosIndex][0],-tempListPos[minPosIndex][1],
+            		-tempListPos[minPosIndex][2]));
+            */
+	        //console.log(table[i].ctm)
+            table[i].ctm = mult(table[i].ctm,
+            translate(-table[i].pos[0],-table[i].pos[1],
+            		-table[i].pos[2]));
+            
+       
+            table[i].ctm = mult(table[i].ctm, rotate(90, [0,0,1]));
+            
+            table[i].ctm = mult(table[i].ctm,
+            translate(table[i].pos[0],table[i].pos[1],
+            		table[i].pos[2]));
+            /*
+            table[i].ctm = mult(table[i].ctm,
+            	translate(tempListPos[minPosIndex][0],tempListPos[minPosIndex][1],
+            		tempListPos[minPosIndex][2]));
+            table[i].pos = vec3(table[i].ctm[3][0],table[i].ctm[3][1],table[i].ctm[3][2]);
+            */
+            
+            
+  }
+}
+
+function mag(u) {
+  return Math.sqrt(Math.pow(u[0], 2) + Math.pow(u[1], 2) + Math.pow(u[2], 2));
+}
+
+//TODO:  rotate the last piece about Y-axis
+
+//TODO: rotate  the last pience about Z-axis
+
+// rotate camera left
+function rotateCameraLeft(){
+      var rot = rotate(-ROT_AMT, [0, 0, 1]);
+      modelView = mult(modelView,rot);
+}
+
+//rotate camera right
+function rotateCameraRight(){
+      var rot = rotate(ROT_AMT, [0, 0, 1]);
+      modelView = mult(modelView,rot);
+}

@@ -1,0 +1,104 @@
+/*
+ * Te3ds
+ * by Bipeen Acharya, Olivier Mahame, Suraj Bajracharya
+ * Submitted to: Dr. Joshua Stough
+ * Date: April 9th, 2014
+ */
+
+function makeSquare() {
+	var squareNormal = normalize(vec3(0.0, 0.0, 1.0));
+
+	pointsArray.push(vec4(0.0, 0.0, 0.0, 1.0)); 
+	normalsArray.push(squareNormal);
+
+	pointsArray.push(vec4(1.0, 0.0, 0.0, 1.0)); 
+	normalsArray.push(squareNormal);
+
+	pointsArray.push(vec4(1.0, 1.0, 0.0, 1.0)); 
+	normalsArray.push(squareNormal);
+
+	pointsArray.push(vec4(0.0, 1.0, 0.0, 1.0)); 
+	normalsArray.push(squareNormal);
+
+	return 4;
+}
+
+var makeGrid = function() {
+
+	var size,gridColor;
+
+	// floor
+	gridColor = vec4(1.0, 1.0, 1.0, 1.0);
+
+	for (var i = -5; i < 5; i++) {
+		for (var j = -5; j < 5; j++) {
+			size = makeSquare();
+			obj = object("SQUARE",1,size);
+			obj.ctm = translate(i, j, 0.0);
+			obj.pos = vec3(i, j, 0.0);
+			obj.materialDiffuse = gridColor;
+			obj.materialSpecular = gridColor;
+			gridTable.push(obj);
+		}
+	}
+
+	// X-wall (red)
+	gridColor = vec4(1.0, 0.0, 0.0, 1.0);
+
+	for (var i = -5; i < 5; i++) {
+		for (var j = -5; j < 15; j++) {
+			size = makeSquare();
+			obj = object("SQUARE",1,size);
+			obj.ctm = mult(translate(i, -5, j+5),rotate(90,[1.0,0.0,0.0]));
+			obj.pos = vec3(i, -5, j+5);
+			obj.materialDiffuse = gridColor;
+			obj.materialSpecular = gridColor;
+			gridTable.push(obj);
+		}
+	}
+
+	// Y-wall (green)
+	gridColor = vec4(0.0, 1.0, 0.0, 1.0);
+
+	for (var i = -5; i < 5; i++) {
+		for (var j = -5; j < 15; j++) {
+			size = makeSquare();
+			obj = object("SQUARE",1,size);
+			obj.ctm = mult(translate(-5, i, j+5),rotate(-90,[0.0,1.0,0.0]));
+			obj.pos = vec3(-5, i, j+5);
+			obj.materialDiffuse = gridColor;
+			obj.materialSpecular = gridColor;
+			gridTable.push(obj);
+		}
+	}
+
+	// X-wall-2 (blue)
+	gridColor = vec4(0.0, 0.0, 1.0, 1.0);
+
+	for (var i = -5; i < 5; i++) {
+		for (var j = -5; j < 15; j++) {
+			size = makeSquare();
+			obj = object("SQUARE",1,size);
+			obj.ctm = mult(translate(i, 5, j+5),rotate(90,[1.0,0.0,0.0]));
+			obj.pos = vec3(i, 5, j+5);
+			obj.materialDiffuse = gridColor;
+			obj.materialSpecular = gridColor;
+			gridTable.push(obj);
+		}
+	}
+
+	// Y-wall-2 (yellow)
+	gridColor = vec4(1.0, 1.0, 0.0, 1.0);
+
+	for (var i = -5; i < 5; i++) {
+		for (var j = -5; j < 15; j++) {
+			size = makeSquare();
+			obj = object("SQUARE",1,size);
+			obj.ctm = mult(translate(5, i, j+5),rotate(-90,[0.0,1.0,0.0]));
+			obj.pos = vec3(5, i, j+5);
+			obj.materialDiffuse = gridColor;
+			obj.materialSpecular = gridColor;
+			gridTable.push(obj);
+		}
+	}
+}

@@ -1,0 +1,39 @@
+var initKeyboardEvents = function(){
+	document.onkeypress = handleKeyboardEvents;
+
+}
+
+function handleKeyboardEvents(event){
+	switch (event.charCode){
+	
+		case "w".charCodeAt(0):
+			//  move last piece towards red wall
+		    moveCurrentPieceTowardRedWall();
+			break;
+		case "a".charCodeAt(0):
+			// move piece towards blue wall
+		    moveCurrentPieceTowardBlueWall();
+			break;
+		case "s".charCodeAt(0):
+			// move piece towards yellow wall
+		    moveCurrentPieceTowardYellowWall();
+			break;
+		case "d".charCodeAt(0):
+			// move piece towards green wall
+		    moveCurrentPieceTowardGreenWall();
+			break;
+		case "j".charCodeAt(0):
+			// rotate camera left
+			rotateCameraLeft();
+			break;
+		case "l".charCodeAt(0):
+			// rotate camera right
+			rotateCameraRight();
+			break;
+		case 0:
+			startGame();
+			break;
+			
+	}
+	
+}

@@ -1,0 +1,153 @@
+var TRAN_AMT = 1.0;
+
+// move the last piece towards red wall
+function moveCurrentPieceTowardRedWall(){
+
+if (IS_PLAYING) {
+	var tempList = [];
+	for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+           	tempList.push(table[i].ctm[1][3]);
+           	var tempPos = vec3(table[i].pos[0],table[i].pos[1]-TRAN_AMT,table[i].pos[2]);
+           	for(var j=FIRST_PIECE_START_INDEX;j < LAST_PIECE_START_INDEX;j++){
+           		if (checkDist(table[j].pos, tempPos)< 1){
+        			return; 
+        	    }
+        	}
+	}
+	if ((Math.min.apply(Math, tempList)) <= -5) {
+		return;
+	} else {
+		for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+           	table[i].ctm = mult(table[i].ctm,translate(0.0,-TRAN_AMT,0.0));
+           	table[i].pos[1] -= TRAN_AMT;
+		}
+	}
+			
+}
+};
+//move the piece towards blue wall
+function moveCurrentPieceTowardBlueWall(){
+if (IS_PLAYING) {
+	var tempList = [];
+	for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+           	tempList.push(table[i].ctm[1][3]);
+           	var tempPos = vec3(table[i].pos[0],table[i].pos[1]+TRAN_AMT,table[i].pos[2]);
+           	for(var j=FIRST_PIECE_START_INDEX;j < LAST_PIECE_START_INDEX;j++){
+           		if (checkDist(table[j].pos, tempPos)< 1){
+        			return; 
+        	    }
+        	}
+	}
+	if ((Math.max.apply(Math, tempList)) >= 4) {
+		return;
+	} else {
+		for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+           	table[i].ctm = mult(table[i].ctm,translate(0.0,+TRAN_AMT,0.0));
+           	table[i].pos[1] += TRAN_AMT;
+		}
+	}
+	
+
+}
+};
+//move the piece towards yellow wall
+function moveCurrentPieceTowardYellowWall(){
+if (IS_PLAYING) {
+	var tempList = [];
+	for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+           	tempList.push(table[i].ctm[0][3]);
+           	var tempPos = vec3(table[i].pos[0]+TRAN_AMT,table[i].pos[1],table[i].pos[2]);
+           	for(var j=FIRST_PIECE_START_INDEX;j < LAST_PIECE_START_INDEX;j++){
+           		if (checkDist(table[j].pos, tempPos)< 1){
+        			return; 
+        	    }
+        	}
+           	
+           	
+	}
+	if ((Math.max.apply(Math, tempList)) >= 5) {
+		return;
+	} else {
+		for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+           	table[i].ctm = mult(table[i].ctm,translate(TRAN_AMT,0.0,0.0));
+           	table[i].pos[0] += TRAN_AMT;
+		}
+	}
+	     
+
+}
+};
+//move the piece towards Green wall
+function moveCurrentPieceTowardGreenWall(){
+if (IS_PLAYING) {
+var tempList = [];
+	for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+           	tempList.push(table[i].ctm[0][3]);
+           	var tempPos = vec3(table[i].pos[0]-TRAN_AMT,table[i].pos[1],table[i].pos[2]);
+           	for(var j=FIRST_PIECE_START_INDEX;j < LAST_PIECE_START_INDEX;j++){
+           		if (checkDist(table[j].pos, tempPos)< 1){
+        			return; 
+        	    }
+        	}
+           	
+          
+            
+	}
+	if ((Math.min.apply(Math, tempList)) <=-4) {
+		return;
+	} else {
+		for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+           	table[i].ctm = mult(table[i].ctm,translate(-TRAN_AMT,0.0,0.0));
+           	table[i].pos[0] -= TRAN_AMT;
+		}
+	}
+	
+
+}
+};
+
+function dropButton(){
+	if (IS_PLAYING) {
+
+	var tempList = [];
+	for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+           	tempList.push(table[i].ctm[2][3]);
+           	var tempPos = vec3(table[i].pos[0],table[i].pos[1],table[i].pos[2]-TRAN_AMT);
+           	for(var j=FIRST_PIECE_START_INDEX;j < LAST_PIECE_START_INDEX;j++){
+           		
+           		if (checkDist(table[j].pos, tempPos)<=0.5){
+           			SCORE += table.length - LAST_PIECE_START_INDEX;
+           			updateLevel("z");
+        	        addRandomShape();
+        			return; 
+        	    }
+        	}
+           
+	}
+	if ((Math.min.apply(Math, tempList)) <= 0) {
+		    updateLevel("z");
+		    SCORE += table.length - LAST_PIECE_START_INDEX;
+		    
+		    
+		    addRandomShape();
+		     return;
+	} else {
+		for (var i=LAST_PIECE_START_INDEX; i<table.length;i++){
+           	table[i].ctm = mult(table[i].ctm,translate(0.0,0.0,-TRAN_AMT));
+           	table[i].pos[2] -= TRAN_AMT;
+           	
+           	
+		}
+	}
+}	
+};
+
+
+
+//TODO: Move camera up
+
+//TODO: move camera down
+
+
+
+
