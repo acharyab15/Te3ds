@@ -1,0 +1,6 @@
+{
+  "name": "Te3ds",
+  "tagline": "A 3D tetris game as a part of the final project for the Interactive Computer Graphics class.",
+  "body": "# Te3ds\r\nA 3D tetris game as a part of the final project for the Interactive Computer Graphics class. We implemented the game using the WebGL graphics library (a Javascript Library). We also made use of the AngularJS framework. The game is implemented as a web application.\r\n\r\n<a href=\"https://www.youtube.com/watch?v=MoYmfrxNLjM\">This  </a> link shows a short video of the game play. \r\n\r\n<a href=\"/Presentation01_WebGL.pdf\">This</a> is our final presentation after the project and <a href=\"/Final.pdf\"> this </a> is the final writeup.\r\n\r\n# Personnel\r\nBipeen Acharya, Suraj Bajracharya, Olivier Mahame\r\n",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
