@@ -6,4 +6,4 @@ A 3D tetris game as a part of the final project for the Interactive Computer Gra
 <a href="/Presentation01_WebGL.pdf">This</a> is our final presentation after the project and <a href="/Final.pdf"> this </a> is the final writeup.
 
 # Personnel
-<a href="https://github.com/acharyab15">Bipeen Acharya</a>, <a href="https://github.com/Rowboat353">Suraj Bajracharya</a>, Olivier Mahame
+<a href="https://github.com/acharyab15">Bipeen Acharya</a>, <a href="https://github.com/Rowboat353">Suraj Bajracharya</a>, <a href="https://github.com/mahameo">Olivier Mahame</a>
